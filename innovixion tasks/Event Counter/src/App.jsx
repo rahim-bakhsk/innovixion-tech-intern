@@ -1,7 +1,6 @@
-import { useState, useEffect, createRef, useRef } from "react";
+import { useState, useEffect } from "react";
 import Counter from "./Counter";
 import { v4 as uuidv4 } from "uuid";
-import "./App.css";
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [states, setStates] = useState({
@@ -15,10 +14,10 @@ function App() {
     eventDate: "",
     eventDesc: "",
     eventName: "",
+    eventHour: "",
   });
   const [eventsArray, setEventsArray] = useState([]);
-  const [countDownWindowData, setCountDownWindowData] = useState(null);
-  let countDownWindow = useRef(null);
+  const [countDownWindowData, setCountDownWindowData] = useState({});
 
   useEffect(() => {
     // Retrieve existing data from local storage
@@ -46,30 +45,31 @@ function App() {
     return setStates((prev) => ({ ...prev, isCreatingNewEvent: false }));
   };
 
-  // const countDownRepresenter = () => {
-  //   return (
-  //     <Counter
-  //       info={{
-  //         title: [countDownWindowData.name],
-  //         emoji: "💕",
-  //         date: [countDownWindowData.date],
-  //         color: "orange",
-  //       }}
-  //     />
-  //   );
+  // const [ID, setID] = useState(null);
+  // let countDownWindowAnalyser = (eventsArray, id) => {
+  //   const selectedEvent = eventsArray.find((item) => item.eventID === id);
+
+  //   if (selectedEvent) {
+  //     setCountDownWindowData({
+  //       name: selectedEvent.eventName,
+  //       date: selectedEvent.eventDate,
+  //       hour: selectedEvent.eventHour,
+  //       description: selectedEvent.eventDesc,
+  //     });
+  //   } else {
+  //     console.log("Event not found");
+  //   }
   // };
 
   // useEffect(() => {
-  //   countDownRepresenter();
-  //   // countDownWindow.textContent = countDownRepresenter();
-  //   countDownWindow.current.innerText = countDownRepresenter()
-  //   console.log(countDownWindow)
-  // }, [countDownWindowData]);
+  //   countDownWindowAnalyser(eventsArray, ID);
+  //   console.log(countDownWindowData);
+  // }, [ID]);
 
   return (
     <section className="flex h-screen bg-slate-950">
       {/* side bar */}
-      <div className="w-full sm:w-4/12  lg:w-3/12 p-5 h-full bg-slate-700 text-sky-100 lg:rounded-br-full">
+      <div className="w-full sm:w-4/12  lg:w-3/12 p-5 h-full bg-slate-700 text-sky-100">
         <h2 className="text-lg capitalize pb-10 flex gap-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -114,20 +114,23 @@ function App() {
           {eventsArray.map((event) => {
             return (
               <button
-                className="text-lg w-full text-left capitalize"
+                className="text-lg w-full text-left capitalize my-1 py-2 ps-1 transition-all duration-500 hover:bg-red-500"
                 key={event.eventID}
+                // onClick={()=>setID(event,eventID)}
                 onClick={() => {
-                  const result = eventsArray.filter((item) => {
-                    return item.eventID === event.eventID;
-                  });
+                  const selectedEvent = eventsArray.find(
+                    (item) => item.eventID === event.eventID
+                  );
 
-                  setCountDownWindowData({
-                    name: result[0].eventName,
-                    date: result[0].eventDate,
-                    description: result[0].eventDesc,
-                  });
-
-                  // return countDownWindow.current.innerText = countDownRepresenter()
+                  return (
+                    selectedEvent &&
+                    setCountDownWindowData({
+                      name: selectedEvent.eventName,
+                      date: selectedEvent.eventDate,
+                      hour: selectedEvent.eventHour,
+                      description: selectedEvent.eventDesc,
+                    })
+                  );
                 }}
               >
                 {event.eventName}
@@ -137,9 +140,22 @@ function App() {
         </div>
       </div>
       {/* countdown window */}
-      <div className="w-full  sm:w-8/12 h-full p-5">
-        {countDownWindowData && (
+      <div className="w-full  sm:w-8/12 h-full p-5 relative">
+        {Object.keys(countDownWindowData).length && (
           <Counter countDownWindowData={countDownWindowData} />
+        )}
+
+        {countDownWindowData ? (
+          <div className="text-white flex justify-center items-center h-full capitalize">
+            <div>
+              <p className="text-center">save your event and enjoy it.</p>
+              <p className=" text-center block text-red-500 underline underline-offset-8">
+                Don`t loose your momments !!!
+              </p>
+            </div>
+          </div>
+        ) : (
+          false
         )}
       </div>
 
@@ -147,7 +163,7 @@ function App() {
       <div
         className={`${
           states.isCreatingNewEvent
-            ? "w-3/12 h-fit  p-10 border-2 border-indigo-500"
+            ? "w-10/12 lg:w-3/12 h-fit  p-10 border-2 border-indigo-500"
             : "h-0 w-0 overflow-hidden p-0 border-0 opacity-0"
         }  fixed bottom-0 right-0 left-0 top-0 m-auto z-10 bg-gray-200 rounded-2xl transition-all duration-500 delay-100`}
       >
@@ -195,9 +211,6 @@ function App() {
               onClick={() =>
                 setStates((prev) => ({ ...prev, isEventInput: true }))
               }
-              onFocus={() =>
-                setStates((prev) => ({ ...prev, isEventInput: true }))
-              }
               onChange={handleChange}
             />
           </div>
@@ -219,6 +232,7 @@ function App() {
               id="eventDesc"
               value={formData.eventDesc}
               className="w-full bg-transparent border-b border-indigo-500 focus:outline-0"
+              maxLength="35"
               onClick={() =>
                 setStates((prev) => ({ ...prev, isDescInput: true }))
               }
@@ -235,6 +249,17 @@ function App() {
               name="eventDate"
               id="eventDate"
               value={formData.eventDate}
+              onChange={handleChange}
+              className="w-full bg-transparent border-b border-b-indigo-500 focus:outline-0 pb-1"
+            />
+          </div>
+          <div className="flex flex-col pt-4">
+            <input
+              type="time"
+              required
+              name="eventHour"
+              id="eventHour"
+              value={formData.eventHour}
               onChange={handleChange}
               className="w-full bg-transparent border-b border-b-indigo-500 focus:outline-0 pb-1"
             />
