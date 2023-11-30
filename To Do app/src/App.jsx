@@ -83,12 +83,18 @@ function App() {
     setProfileInfo((prevProfile) => {
       return {
         tasksData: {
-          ...prevProfile.tasksData,
           uncompletedTasks: prevProfile.tasksData.uncompletedTasks.filter(
             (uncompletedTask) => {
               return (
                 uncompletedTask.taskID !== taskForDeletion.taskID &&
                 uncompletedTask
+              );
+            }
+          ),
+           completedTasks: prevProfile.tasksData.completedTasks.filter(
+            (completedTask) => {
+              return (
+                completedTask.taskID !== taskForDeletion.taskID && completedTask
               );
             }
           ),
